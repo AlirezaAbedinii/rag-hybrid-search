@@ -16,8 +16,10 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      - name: Install (editable + dev tools)
-        run: python -m pip install -e ".[dev]"
+      - name: Install (editable + dev tools + lightweight ingestion deps)
+        # ingestion extra (pypdf/bs4/markdown-it) is light and lets the loader
+        # tests run in CI. The heavy ML stack (chromadb/torch) stays out of CI.
+        run: python -m pip install -e ".[dev,ingestion]"
 
       - name: Lint (ruff)
         run: python -m ruff check .
