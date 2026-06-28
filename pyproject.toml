@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-hybrid-search"
+version = "0.0.0"
+description = "Production-grade RAG service with hybrid (dense + BM25 + RRF + rerank) search, citation verification, and latency/cost instrumentation."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "dove", email = "doveisgh@gmail.com" }]
+keywords = ["rag", "retrieval", "hybrid-search", "bm25", "chromadb", "llm-evaluation"]
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Private :: Do Not Upload",
+]
+
+# Core dependencies — what config.py needs today. Per-phase libraries live in the
+# optional-dependency groups below so `pip install -e .` and CI stay fast while the
+# heavy ML stack (chroma/torch/etc.) is pulled in only as each phase lands.
+dependencies = [
+    "pydantic>=2.5",
+    "pydantic-settings>=2.1",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+# Phase 1 — ingestion & indexing
+ingestion = ["pypdf>=4.0", "beautifulsoup4>=4.12", "markdown-it-py>=3.0"]
+indexing = ["chromadb>=0.5", "rank-bm25>=0.2.2"]
+# Embeddings / generation providers (single provider in use; both declared for the swap)
+llm = ["openai>=1.30", "anthropic>=0.34"]
+embeddings-offline = ["sentence-transformers>=2.7"]
+# Phase 2 — reranking
+rerank = ["sentence-transformers>=2.7"]
+# Phase 5 — API & UI
+api = ["fastapi>=0.110", "uvicorn[standard]>=0.29"]
+ui = ["streamlit>=1.33"]
+# Tooling
+dev = ["ruff>=0.4", "pytest>=8.0", "httpx>=0.27"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "eval", "scripts", "ui"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+ignore = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["src"]

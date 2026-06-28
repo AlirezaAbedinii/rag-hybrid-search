@@ -1,0 +1,44 @@
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+.installed.cfg
+
+# ── Virtualenvs / tooling caches ────────────────────────────────────────────
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ── Secrets ─────────────────────────────────────────────────────────────────
+.env
+*.local
+
+# ── Generated data / indexes / traces ───────────────────────────────────────
+# data/ is gitignored EXCEPT the provided sample corpus and the eval golden set.
+data/*
+!data/raw/
+data/raw/*
+!data/raw/ferry_docs/
+!data/processed/
+data/processed/*
+!data/processed/.gitkeep
+data/chroma/
+*.sqlite
+*.pkl
+
+# ── Reference material (the 15-projects guide, not part of the codebase) ─────
+docs/
+
+# ── OS / editor ─────────────────────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/
