@@ -38,6 +38,10 @@ data/chroma/
 # ── Reference material (the 15-projects guide, not part of the codebase) ─────
 docs/
 
+# ── Internal planning / working notes (kept local, not published) ────────────
+/CLAUDE.md
+/PROJECT_IMPLEMENTATION_PLAN.md
+
 # ── OS / editor ─────────────────────────────────────────────────────────────
 .DS_Store
 .idea/
