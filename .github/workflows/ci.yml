@@ -26,3 +26,6 @@ jobs:
 
       - name: Test (pytest)
         run: python -m pytest
+
+      - name: Eval smoke (mocked, no paid API calls)
+        run: python eval/run_eval.py --smoke

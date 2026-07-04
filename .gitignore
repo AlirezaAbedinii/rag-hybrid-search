@@ -35,6 +35,9 @@ data/chroma/
 *.sqlite
 *.pkl
 
+# Generated evaluation reports
+eval/reports/
+
 # ── Reference material (the 15-projects guide, not part of the codebase) ─────
 docs/
 

@@ -61,4 +61,5 @@ ignore = []
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
-pythonpath = ["src"]
+# "src" for the rag package; "." so the eval harness (eval/) is importable.
+pythonpath = ["src", "."]
