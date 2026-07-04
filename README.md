@@ -138,7 +138,7 @@ src/rag/
 ├── generation/          # grounded prompt, LLM client, citation parsing
 ├── observability/       # per-stage latency + token/cost accounting
 └── pipeline.py          # retrieve → gate → generate → cite
-eval/                    # golden set + evaluation harness (in progress)
+eval/                    # golden set + LLM-as-judge harness (correctness, faithfulness)
 scripts/ingest.py        # CLI: ingest a file/folder
 tests/                   # deterministic tests (LLM mocked)
 ```
@@ -152,8 +152,8 @@ FastAPI, Streamlit, Docker.
 
 ## Project status
 
-The dense-only pipeline is implemented and tested end to end; the differentiated
-features are in progress.
+The dense-only pipeline and a first evaluation harness are implemented and tested
+end to end; the differentiated features are in progress.
 
 **Done**
 - [x] Multi-format ingestion (Markdown, text, PDF) → normalize → fixed-size
@@ -164,14 +164,16 @@ features are in progress.
 - [x] Grounded generation with inline `[n]` citations mapped to sources
 - [x] Retrieval-confidence-gated "I don't know" refusal
 - [x] Per-stage latency + token/cost instrumentation
-- [x] Deterministic test suite + CI (ruff + pytest)
+- [x] LLM-as-judge evaluation (correctness + faithfulness) over a 15-question
+      hand-written golden set, with a CI-safe mocked smoke run
+- [x] Deterministic test suite + CI (ruff + pytest + eval smoke)
 
 **Roadmap**
 - [ ] Hybrid retrieval: BM25 sparse index + Reciprocal Rank Fusion +
       cross-encoder reranker (top-20 → top-5)
 - [ ] Recursive + semantic chunkers (switchable) and near-duplicate dedup
-- [ ] LLM-as-judge evaluation harness (correctness, faithfulness, retrieval
-      relevance, citation accuracy) with hybrid-vs-dense and chunking comparisons
+- [ ] Two more eval metrics (retrieval relevance, citation accuracy) +
+      hybrid-vs-dense and chunking-strategy comparison tables
 - [ ] Citation verification + composite confidence score
 - [ ] FastAPI `POST /v1/ask` + Streamlit UI + Docker Compose
 
@@ -183,8 +185,8 @@ make lint     # ruff check .
 make install  # pip install -e ".[dev]"
 ```
 
-CI runs `ruff` + `pytest` on every push. Unit tests are deterministic and mock
-the LLM, so no paid API calls are made in CI.
+CI runs `ruff` + `pytest` + a mocked evaluation smoke run on every push. Tests are
+deterministic and mock the LLM, so no paid API calls are made in CI.
 
 ## License
 
