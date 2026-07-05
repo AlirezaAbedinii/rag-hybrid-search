@@ -1,6 +1,6 @@
 """CLI: ingest a folder or file into the index.
 
-Runs the MVP ingestion pipeline: load -> normalize -> chunk -> embed -> store in
+Runs the ingestion pipeline: load -> normalize -> chunk -> embed -> store in
 Chroma, reporting chunk count, embedding cost, and per-stage latency.
 
 Examples
@@ -28,13 +28,6 @@ from rag.ingestion import build_chunks_for_dir, build_chunks_for_file  # noqa: E
 from rag.observability.metrics import Stopwatch  # noqa: E402
 
 
-def _build_chunks(target: Path, persist: bool):
-    settings = get_settings()
-    if target.is_dir():
-        return build_chunks_for_dir(target, settings=settings, persist=persist)
-    return build_chunks_for_file(target, settings=settings, persist=persist)
-
-
 def main(argv: list[str] | None = None) -> int:
     settings = get_settings()
     parser = argparse.ArgumentParser(description="Ingest documents into the index.")
@@ -60,38 +53,30 @@ def main(argv: list[str] | None = None) -> int:
     if not target.exists():
         parser.error(f"path does not exist: {target}")
 
-    sw = Stopwatch()
-    with sw.time("load_chunk"):
-        chunks = _build_chunks(target, persist=args.persist)
-
-    sources = sorted({c.source_file for c in chunks})
-    print(
-        f"Loaded + chunked {len(chunks)} chunks from {len(sources)} "
-        f"file(s): {', '.join(sources)}"
-    )
-
     if args.dry_run:
+        sw = Stopwatch()
+        with sw.time("load_chunk"):
+            if target.is_dir():
+                chunks = build_chunks_for_dir(target, settings=settings, persist=args.persist)
+            else:
+                chunks = build_chunks_for_file(target, settings=settings, persist=args.persist)
+        sources = sorted({c.source_file for c in chunks})
+        print(
+            f"Loaded + chunked {len(chunks)} chunks from {len(sources)} "
+            f"file(s): {', '.join(sources)}"
+        )
         print(f"[dry-run] no embedding/storing. timings_ms={sw.as_dict()}")
         return 0
 
-    # Full path: embed + store. Imports are local so --dry-run needs no extras.
-    from rag.indexing.embeddings import get_embedding_client
-    from rag.indexing.vector_store import VectorStore
+    from rag.indexing import index_path  # local import: needs indexing extras
 
-    embedder = get_embedding_client(settings)
-    store = VectorStore.from_settings(settings)
-    with sw.time("embed"):
-        vectors = embedder.embed_texts([c.text for c in chunks])
-    with sw.time("store"):
-        stored = store.add(chunks, vectors)
-
+    summary = index_path(target, settings=settings, persist_processed=args.persist)
     print(
-        f"Stored {stored} chunks in Chroma collection '{settings.chroma_collection}' "
-        f"(total now {store.count()})."
+        f"Indexed {summary.chunks_indexed} chunks from {summary.files} file(s) "
+        f"into '{settings.chroma_collection}' (total now {summary.total_chunks_in_store})."
     )
     print(
-        f"embedding_tokens={embedder.total_tokens} "
-        f"embedding_cost_usd={embedder.total_cost_usd:.6f} timings_ms={sw.as_dict()}"
+        f"embedding_cost_usd={summary.embedding_cost_usd:.6f} timings_ms={summary.timings_ms}"
     )
     return 0
 

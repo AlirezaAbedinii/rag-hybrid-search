@@ -66,6 +66,15 @@ class VectorStore:
         """Number of chunks currently stored."""
         return self._collection.count()
 
+    def list_sources(self) -> dict[str, int]:
+        """Map of ``source_file`` -> chunk count across the whole collection."""
+        res = self._collection.get(include=["metadatas"])
+        counts: dict[str, int] = {}
+        for meta in res["metadatas"] or []:
+            source = str(meta.get("source_file", "unknown"))
+            counts[source] = counts.get(source, 0) + 1
+        return dict(sorted(counts.items()))
+
     def query(self, query_embedding: Vector, top_k: int = 10) -> list[ScoredChunk]:
         """Return the ``top_k`` nearest chunks by cosine similarity."""
         res = self._collection.query(

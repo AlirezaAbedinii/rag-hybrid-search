@@ -156,4 +156,78 @@ def test_ask_logs_a_trace_per_request(tmp_path) -> None:
 
 def test_openapi_docs_are_exposed(client: TestClient) -> None:
     schema = client.get("/openapi.json").json()
-    assert "/v1/ask" in schema["paths"]
+    for path in ("/v1/ask", "/v1/ingest", "/v1/documents", "/v1/stats"):
+        assert path in schema["paths"]
+
+
+# --- V1 endpoints -----------------------------------------------------------
+class FakeStore:
+    def list_sources(self) -> dict[str, int]:
+        return {"01-overview.md": 5, "04-error-codes.md": 4}
+
+    def count(self) -> int:
+        return 9
+
+
+class FakeIndexSummary:
+    files = 7
+    chunks_indexed = 37
+    total_chunks_in_store = 37
+    embedding_cost_usd = 0.00012
+    timings_ms = {"load_chunk": 3.0, "embed": 120.0, "store": 15.0, "total_ms": 138.0}
+
+
+def _v1_app(tmp_path):
+    return create_app(
+        Settings(_env_file=None),
+        pipeline_factory=lambda mode: FakePipeline(mode, _answered),
+        trace_store=TraceStore(tmp_path / "traces.sqlite"),
+        indexer=lambda path: FakeIndexSummary(),
+        store_factory=lambda: FakeStore(),
+    )
+
+
+def test_stats_aggregates_over_logged_requests(tmp_path) -> None:
+    client = TestClient(_v1_app(tmp_path))
+    for _ in range(3):
+        client.post("/v1/ask", json={"question": "q"})
+
+    stats = client.get("/v1/stats").json()
+    assert stats["requests"] == 3
+    assert stats["refused"] == 0
+    assert stats["total_cost_usd"] == pytest.approx(3 * 0.000045)
+    # Per-stage percentiles present, including the generate stage.
+    assert stats["latency_ms"]["generate"]["p95"] == pytest.approx(400.0)
+    assert stats["latency_ms"]["total_ms"]["n"] == 3
+
+
+def test_stats_empty_is_zeroed(tmp_path) -> None:
+    client = TestClient(_v1_app(tmp_path))
+    stats = client.get("/v1/stats").json()
+    assert stats["requests"] == 0
+    assert stats["refusal_rate"] == 0.0
+    assert stats["latency_ms"] == {}
+
+
+def test_documents_lists_indexed_sources(tmp_path) -> None:
+    client = TestClient(_v1_app(tmp_path))
+    body = client.get("/v1/documents").json()
+    assert body["total_chunks"] == 9
+    assert {"source_file": "01-overview.md", "chunks": 5} in body["documents"]
+
+
+def test_ingest_defaults_to_sample_corpus(tmp_path) -> None:
+    client = TestClient(_v1_app(tmp_path))
+    resp = client.post("/v1/ingest", json={})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["chunks_indexed"] == 37
+    assert body["embedding_cost_usd"] == pytest.approx(0.00012)
+    assert "embed" in body["timings_ms"]
+
+
+def test_ingest_missing_path_is_400(tmp_path) -> None:
+    client = TestClient(_v1_app(tmp_path))
+    resp = client.post("/v1/ingest", json={"path": "/no/such/dir"})
+    assert resp.status_code == 400
+    assert "does not exist" in resp.json()["detail"]

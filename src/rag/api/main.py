@@ -23,10 +23,18 @@ from .schemas import (
     AskResponse,
     CitationModel,
     ContextModel,
+    DocumentInfo,
+    DocumentsResponse,
+    IngestRequest,
+    IngestResponse,
+    StatsResponse,
     UsageModel,
 )
 
 PipelineFactory = Callable[[str], RAGPipeline]
+# indexer(path) -> IndexSummary-like; store_factory() -> object with list_sources/count.
+Indexer = Callable[[str], object]
+StoreFactory = Callable[[], object]
 
 
 def _default_pipeline_factory(settings: Settings) -> PipelineFactory:
@@ -72,6 +80,8 @@ def create_app(
     *,
     pipeline_factory: PipelineFactory | None = None,
     trace_store: TraceStore | None = None,
+    indexer: Indexer | None = None,
+    store_factory: StoreFactory | None = None,
 ) -> FastAPI:
     """Build the FastAPI app with injectable dependencies (fakes in tests)."""
     settings = settings or get_settings()
@@ -89,6 +99,22 @@ def create_app(
     app.state.pipeline_factory = pipeline_factory or _default_pipeline_factory(settings)
     app.state.trace_store = trace_store  # created lazily so imports touch no disk
     app.state.pipelines = {}  # mode -> RAGPipeline, built on first use
+    app.state.indexer = indexer
+    app.state.store_factory = store_factory
+
+    def _get_indexer() -> Indexer:
+        if app.state.indexer is None:
+            from ..indexing import index_path
+
+            app.state.indexer = lambda path: index_path(path, settings=settings)
+        return app.state.indexer
+
+    def _get_store():
+        if app.state.store_factory is None:
+            from ..indexing.vector_store import VectorStore
+
+            app.state.store_factory = lambda: VectorStore.from_settings(settings)
+        return app.state.store_factory()
 
     def _get_trace_store() -> TraceStore:
         if app.state.trace_store is None:
@@ -134,6 +160,50 @@ def create_app(
             }
         )
         return _to_response(result)
+
+    @app.post("/v1/ingest", response_model=IngestResponse, tags=["index"])
+    def ingest(body: IngestRequest) -> IngestResponse:
+        """Index a file or directory (defaults to the sample corpus)."""
+        from pathlib import Path
+
+        target = Path(body.path) if body.path else settings.corpus_dir
+        if not target.exists():
+            raise HTTPException(status_code=400, detail=f"Path does not exist: {target}")
+        try:
+            summary = _get_indexer()(str(target))
+        except ConfigError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ImportError as exc:
+            raise HTTPException(
+                status_code=503, detail=f"Server missing a dependency: {exc}"
+            ) from exc
+        return IngestResponse(
+            files=summary.files,
+            chunks_indexed=summary.chunks_indexed,
+            total_chunks_in_store=summary.total_chunks_in_store,
+            embedding_cost_usd=summary.embedding_cost_usd,
+            timings_ms=summary.timings_ms,
+        )
+
+    @app.get("/v1/documents", response_model=DocumentsResponse, tags=["index"])
+    def documents() -> DocumentsResponse:
+        """List indexed source documents and their chunk counts."""
+        try:
+            store = _get_store()
+        except ImportError as exc:
+            raise HTTPException(
+                status_code=503, detail=f"Server missing a dependency: {exc}"
+            ) from exc
+        sources = store.list_sources()
+        return DocumentsResponse(
+            documents=[DocumentInfo(source_file=s, chunks=n) for s, n in sources.items()],
+            total_chunks=store.count(),
+        )
+
+    @app.get("/v1/stats", response_model=StatsResponse, tags=["ops"])
+    def stats() -> StatsResponse:
+        """Cost/latency summary (P50/P95/P99 per stage) over all logged requests."""
+        return StatsResponse(**_get_trace_store().aggregates())
 
     return app
 

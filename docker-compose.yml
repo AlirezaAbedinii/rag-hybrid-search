@@ -1,8 +1,14 @@
-# Basic stack: the API with persistent, file-based ChromaDB storage.
-# Chroma runs embedded in the API process (file-based, zero infra — the project's
-# fixed storage choice); ./data is bind-mounted so the index survives restarts
-# and `python scripts/ingest.py` run on the host writes the same index the
-# container serves.
+# Full stack: API + persistent Chroma storage + Streamlit UI (+ one-off seeder).
+#
+# Chroma runs embedded in the API process (file-based, zero infra — the
+# project's fixed storage choice); ./data is bind-mounted so the index survives
+# restarts and seeding on the host writes the same index the container serves.
+#
+# Quickstart (zero manual steps beyond an API key in .env):
+#   cp .env.example .env                # set OPENAI_API_KEY
+#   docker compose up -d --build        # API :8000, UI :8501
+#   docker compose run --rm seed        # index the sample corpus
+#   open http://localhost:8501          # or curl the API (see README)
 services:
   api:
     build: .
@@ -23,3 +29,23 @@ services:
       timeout: 5s
       retries: 5
       start_period: 5s
+
+  ui:
+    build: .
+    command: streamlit run ui/app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
+    environment:
+      RAG_API_URL: http://api:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # One-off: `docker compose run --rm seed` indexes the sample corpus.
+  seed:
+    build: .
+    profiles: ["seed"]
+    command: python scripts/seed.py
+    env_file: .env
+    volumes:
+      - ./data:/app/data
