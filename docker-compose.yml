@@ -1,0 +1,25 @@
+# Basic stack: the API with persistent, file-based ChromaDB storage.
+# Chroma runs embedded in the API process (file-based, zero infra — the project's
+# fixed storage choice); ./data is bind-mounted so the index survives restarts
+# and `python scripts/ingest.py` run on the host writes the same index the
+# container serves.
+services:
+  api:
+    build: .
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
