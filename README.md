@@ -95,6 +95,28 @@ pip install -e ".[ingestion,indexing,llm]"
 python scripts/ingest.py                 # embed the sample corpus into ChromaDB
 ```
 
+### Run everything with Docker (API + UI)
+
+```bash
+cp .env.example .env                 # set OPENAI_API_KEY
+docker compose up -d --build         # API on :8000, UI on :8501
+docker compose run --rm seed         # index the sample corpus (idempotent)
+```
+
+Then open the UI at <http://localhost:8501>, browse the OpenAPI docs at
+<http://localhost:8000/docs>, or query directly:
+
+```bash
+curl -X POST http://localhost:8000/v1/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What does FERRY-429 mean?", "mode": "dense", "top_k": 5}'
+```
+
+The response includes the answer, `[n]` citations mapped to source chunks, the
+ranked retrieved contexts, a confidence score, token usage, `cost_usd`, and
+per-stage `timings_ms`. Other endpoints: `POST /v1/ingest`, `GET /v1/documents`,
+and `GET /v1/stats` (P50/P95/P99 latency per stage + cost totals).
+
 ### Asking a question (programmatic)
 
 ```python
@@ -108,8 +130,6 @@ print(result.citations)              # each [n] mapped to its source chunk
 print(result.refused)                # True -> structured "I don't know"
 print(result.cost_usd, result.timings_ms)
 ```
-
-A FastAPI `POST /v1/ask` endpoint and a Streamlit UI are on the roadmap below.
 
 ## Configuration
 
@@ -136,24 +156,27 @@ src/rag/
 ├── indexing/            # embeddings client, ChromaDB wrapper
 ├── retrieval/           # dense retrieval + dense/hybrid mode switch
 ├── generation/          # grounded prompt, LLM client, citation parsing
-├── observability/       # per-stage latency + token/cost accounting
+├── observability/       # per-stage latency + token/cost accounting; trace store
+├── api/                 # FastAPI app: /v1/ask, /v1/ingest, /v1/documents, /v1/stats
 └── pipeline.py          # retrieve → gate → generate → cite
 eval/                    # golden set + LLM-as-judge harness (correctness, faithfulness)
-scripts/ingest.py        # CLI: ingest a file/folder
+ui/app.py                # Streamlit front end (citations, chunks, cost panel)
+scripts/                 # ingest.py (CLI) + seed.py (index the sample corpus)
 tests/                   # deterministic tests (LLM mocked)
 ```
 
 ## Tech stack
 
 Python 3.11+ · ChromaDB · OpenAI `text-embedding-3-small` (offline
-`sentence-transformers` swap) · OpenAI / Anthropic for generation · `pydantic`
-settings · `ruff` · `pytest`. Planned: `rank_bm25`, cross-encoder reranker,
-FastAPI, Streamlit, Docker.
+`sentence-transformers` swap) · OpenAI / Anthropic for generation · FastAPI ·
+Streamlit · Docker Compose · `pydantic` settings · `ruff` · `pytest`.
+Planned: `rank_bm25`, cross-encoder reranker.
 
 ## Project status
 
-The dense-only pipeline and a first evaluation harness are implemented and tested
-end to end; the differentiated features are in progress.
+The dense-only pipeline is complete end to end — ingestion through API/UI, with
+an evaluation harness — and served via Docker Compose. The hybrid-retrieval
+differentiators are in progress.
 
 **Done**
 - [x] Multi-format ingestion (Markdown, text, PDF) → normalize → fixed-size
@@ -163,9 +186,14 @@ end to end; the differentiated features are in progress.
 - [x] Dense retrieval (top-k cosine) with a `dense` / `hybrid` mode switch
 - [x] Grounded generation with inline `[n]` citations mapped to sources
 - [x] Retrieval-confidence-gated "I don't know" refusal
-- [x] Per-stage latency + token/cost instrumentation
+- [x] Per-stage latency + token/cost instrumentation + per-request trace store
 - [x] LLM-as-judge evaluation (correctness + faithfulness) over a 15-question
       hand-written golden set, with a CI-safe mocked smoke run
+- [x] FastAPI service: `POST /v1/ask` (answer + citations + confidence +
+      latency/cost), `POST /v1/ingest`, `GET /v1/documents`, `GET /v1/stats`
+- [x] Streamlit UI: clickable citations, ranked chunks, confidence,
+      dense/hybrid toggle, latency/cost panel
+- [x] Docker Compose stack (API + persistent Chroma volume + UI) + seed script
 - [x] Deterministic test suite + CI (ruff + pytest + eval smoke)
 
 **Roadmap**
@@ -175,7 +203,6 @@ end to end; the differentiated features are in progress.
 - [ ] Two more eval metrics (retrieval relevance, citation accuracy) +
       hybrid-vs-dense and chunking-strategy comparison tables
 - [ ] Citation verification + composite confidence score
-- [ ] FastAPI `POST /v1/ask` + Streamlit UI + Docker Compose
 
 ## Development
 
