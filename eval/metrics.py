@@ -1,19 +1,19 @@
-"""Evaluation metrics: correctness, faithfulness (MVP), retrieval relevance, citation accuracy (V1).
+"""Evaluation metrics: correctness, faithfulness, retrieval relevance, citation accuracy.
 
-These are **LLM-as-judge** metrics: a second LLM call grades the system's answer.
-The judge is any object satisfying the ``Judge`` protocol — in practice a
-``rag.generation.llm_client.ChatClient`` — so tests inject a scripted fake and run
-deterministically with no network.
+Two kinds of metric live here:
 
-MVP metrics implemented here:
+* **LLM-as-judge** — a second LLM call grades the system's answer. The judge is
+  any object satisfying the ``Judge`` protocol (in practice a
+  ``rag.generation.llm_client.ChatClient``), so tests inject a scripted fake.
+  Metrics: **correctness** (answer vs the hand-written ``expected_answer``) and
+  **faithfulness** (is every claim supported by the retrieved context?).
+* **Deterministic** — no LLM involved. Metrics: **retrieval relevance** (was a
+  golden ``supporting_source`` present in the top-k retrieved chunks?) and
+  **citation accuracy** (share of citations the verification judge marked
+  supported — computed by the pipeline at answer time, tallied here).
 
-* **correctness** — does the answer match the hand-written ``expected_answer``?
-* **faithfulness** — is every claim in the answer supported by the retrieved
-  context (i.e. no hallucination)?
-
-Each returns a :class:`MetricResult` with a normalized ``score`` in [0, 1], a
-boolean ``passed``, and the raw 1–5 judge rating. Retrieval-relevance and
-citation-accuracy metrics are V1.
+Each returns a :class:`MetricResult` with a normalized ``score`` in [0, 1] and a
+boolean ``passed`` (judge metrics also carry the raw 1–5 rating).
 """
 from __future__ import annotations
 
@@ -132,4 +132,59 @@ def refusal_correctness(refused: bool) -> MetricResult:
         passed=refused,
         rating=None,
         detail="refusal-based (no_answer category)",
+    )
+
+
+# --- Deterministic metrics (no judge) --------------------------------------
+def _source_names(supporting_sources: list[str]) -> set[str]:
+    """Golden sources normalized to bare filenames (``file#section`` -> ``file``)."""
+    return {s.split("#", 1)[0].strip() for s in supporting_sources if s.strip()}
+
+
+def score_retrieval_relevance(
+    supporting_sources: list[str], contexts: list
+) -> MetricResult | None:
+    """Was any golden ``supporting_source`` among the retrieved chunks' sources?
+
+    Deterministic top-k hit check (plan §6.2). Returns ``None`` for records with
+    no supporting sources (``no_answer`` category — nothing to retrieve).
+    Context objects need only a ``metadata`` dict with ``source_file``
+    (``ScoredChunk`` satisfies this).
+    """
+    wanted = _source_names(supporting_sources)
+    if not wanted:
+        return None
+    retrieved = {str(c.metadata.get("source_file", "")) for c in contexts}
+    hit = bool(wanted & retrieved)
+    return MetricResult(
+        name="retrieval_relevance",
+        score=1.0 if hit else 0.0,
+        passed=hit,
+        rating=None,
+        detail=f"wanted one of {sorted(wanted)}; retrieved {sorted(retrieved)}",
+    )
+
+
+def score_citation_accuracy(citations: list) -> MetricResult | None:
+    """Share of judged citations marked supported (from pipeline verification).
+
+    Citation objects need ``resolved`` and ``supported`` attributes
+    (``rag.generation.citations.Citation`` satisfies this). Unresolved
+    citations count against accuracy — citing a chunk that was never retrieved
+    is an accuracy failure, not a gap. Returns ``None`` when there are no
+    citations or verification never ran (all ``supported`` are None).
+    """
+    if not citations:
+        return None
+    judged = [c for c in citations if not c.resolved or c.supported is not None]
+    if not judged:
+        return None
+    good = sum(1 for c in judged if c.resolved and c.supported)
+    score = good / len(judged)
+    return MetricResult(
+        name="citation_accuracy",
+        score=score,
+        passed=score >= 1.0,
+        rating=None,
+        detail=f"{good}/{len(judged)} citations supported",
     )

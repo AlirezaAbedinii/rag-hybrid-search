@@ -3,11 +3,14 @@
 Pipeline per golden question:
 
     answerer.answer(question) -> AnswerResult
-        -> correctness  (judge vs expected_answer; or refusal check for no_answer)
-        -> faithfulness (judge answer vs retrieved context; skipped when refused)
+        -> correctness          (judge vs expected_answer; refusal check for no_answer)
+        -> faithfulness         (judge answer vs retrieved context; skipped when refused)
+        -> retrieval relevance  (deterministic: supporting_source in top-k)
+        -> citation accuracy    (share of citations verified supported at answer time)
 
-Results are aggregated per-metric and per-category, together with the latency/cost
-the pipeline already records, and written to a JSON report plus a printed summary.
+Results are aggregated per-metric and per-category, together with per-stage
+latency percentiles (P50/P95/P99) and cost-per-query, and written to a JSON
+report plus a printed summary.
 
 Modes
 -----
@@ -36,10 +39,13 @@ from eval.metrics import (  # noqa: E402
     Judge,
     MetricResult,
     refusal_correctness,
+    score_citation_accuracy,
     score_correctness,
     score_faithfulness,
+    score_retrieval_relevance,
 )
 from rag.config import Settings, get_settings  # noqa: E402
+from rag.observability.metrics import percentiles  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -63,8 +69,11 @@ class RecordEval:
     refused: bool
     correctness: MetricResult
     faithfulness: MetricResult | None
+    retrieval_relevance: MetricResult | None
+    citation_accuracy: MetricResult | None
     cost_usd: float
     total_ms: float
+    timings_ms: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -89,6 +98,12 @@ class EvalReport:
                         "refused": r.refused,
                         "correctness": asdict(r.correctness),
                         "faithfulness": asdict(r.faithfulness) if r.faithfulness else None,
+                        "retrieval_relevance": (
+                            asdict(r.retrieval_relevance) if r.retrieval_relevance else None
+                        ),
+                        "citation_accuracy": (
+                            asdict(r.citation_accuracy) if r.citation_accuracy else None
+                        ),
                         "cost_usd": round(r.cost_usd, 6),
                         "total_ms": round(r.total_ms, 3),
                     }
@@ -140,6 +155,9 @@ def evaluate(records: list[GoldenRecord], answerer, judge: Judge) -> EvalReport:
         faithfulness = (
             None if answer.refused else score_faithfulness(answer.answer, context, judge)
         )
+        # Deterministic metrics: top-k hit + verified-citation share.
+        relevance = score_retrieval_relevance(rec.supporting_sources, answer.contexts)
+        accuracy = None if answer.refused else score_citation_accuracy(answer.citations)
 
         results.append(
             RecordEval(
@@ -148,8 +166,11 @@ def evaluate(records: list[GoldenRecord], answerer, judge: Judge) -> EvalReport:
                 refused=answer.refused,
                 correctness=correctness,
                 faithfulness=faithfulness,
+                retrieval_relevance=relevance,
+                citation_accuracy=accuracy,
                 cost_usd=answer.cost_usd,
                 total_ms=answer.timings_ms.get("total_ms", 0.0),
+                timings_ms=dict(answer.timings_ms),
             )
         )
 
@@ -159,6 +180,16 @@ def evaluate(records: list[GoldenRecord], answerer, judge: Judge) -> EvalReport:
 def _aggregate(results: list[RecordEval]) -> EvalReport:
     corr = [r.correctness.score for r in results]
     faith = [r.faithfulness.score for r in results if r.faithfulness is not None]
+    relevance = [r.retrieval_relevance.score for r in results if r.retrieval_relevance]
+    accuracy = [r.citation_accuracy.score for r in results if r.citation_accuracy]
+    costs = [r.cost_usd for r in results]
+
+    # Per-stage latency series across all evaluated questions -> P50/P95/P99.
+    stage_series: dict[str, list[float]] = {}
+    for r in results:
+        for stage, ms in r.timings_ms.items():
+            stage_series.setdefault(stage, []).append(float(ms))
+
     aggregates = {
         "correctness_mean": _mean(corr),
         "correctness_pass_rate": _mean([1.0 if r.correctness.passed else 0.0 for r in results]),
@@ -166,10 +197,19 @@ def _aggregate(results: list[RecordEval]) -> EvalReport:
         "faithfulness_pass_rate": _mean(
             [1.0 if r.faithfulness.passed else 0.0 for r in results if r.faithfulness]
         ),
+        "retrieval_relevance_rate": _mean(relevance),
+        "retrieval_relevance_n": len(relevance),
+        "citation_accuracy_mean": _mean(accuracy),
+        "citation_accuracy_n": len(accuracy),
         "answered": sum(1 for r in results if not r.refused),
         "refused": sum(1 for r in results if r.refused),
-        "total_cost_usd": round(sum(r.cost_usd for r in results), 6),
+        "total_cost_usd": round(sum(costs), 6),
+        "mean_cost_usd": round(statistics.fmean(costs), 6) if costs else 0.0,
+        "median_cost_usd": round(statistics.median(costs), 6) if costs else 0.0,
         "mean_total_ms": _mean([r.total_ms for r in results]),
+        "latency_ms": {
+            stage: percentiles(series) for stage, series in sorted(stage_series.items())
+        },
     }
     per_category: dict[str, dict] = {}
     for r in results:
@@ -195,8 +235,18 @@ def print_summary(report: EvalReport) -> None:
         f"  faithfulness  mean={agg['faithfulness_mean']:.3f}"
         f"  pass={agg['faithfulness_pass_rate']:.3f}"
     )
+    print(
+        f"  retrieval_relevance rate={agg['retrieval_relevance_rate']:.3f}"
+        f" (n={agg['retrieval_relevance_n']})"
+        f"  citation_accuracy mean={agg['citation_accuracy_mean']:.3f}"
+        f" (n={agg['citation_accuracy_n']})"
+    )
     print(f"  answered={agg['answered']}  refused={agg['refused']}")
-    print(f"  cost=${agg['total_cost_usd']:.6f}  mean_latency={agg['mean_total_ms']:.1f}ms")
+    total_p = agg["latency_ms"].get("total_ms", {})
+    print(
+        f"  cost=${agg['total_cost_usd']:.6f} (mean ${agg['mean_cost_usd']:.6f}/q)"
+        f"  latency p50={total_p.get('p50', 0):.1f}ms p95={total_p.get('p95', 0):.1f}ms"
+    )
     print("  by category:")
     for cat, stats in sorted(report.per_category.items()):
         print(f"    {cat:<10} n={stats['n']:<3} correctness_mean={stats['correctness_mean']:.3f}")
@@ -205,6 +255,7 @@ def print_summary(report: EvalReport) -> None:
 # --- Smoke-mode fakes (no network) ----------------------------------------
 def _run_smoke(records: list[GoldenRecord]) -> EvalReport:
     """Run a few records through in-memory fakes to prove the harness works."""
+    from rag.generation.citations import Citation
     from rag.generation.llm_client import ChatResult
     from rag.indexing.vector_store import ScoredChunk
     from rag.observability.metrics import TokenUsage
@@ -218,13 +269,22 @@ def _run_smoke(records: list[GoldenRecord]) -> EvalReport:
             if rec.category == "no_answer":
                 return AnswerResult(
                     question=question, answer="I don't know", mode="dense",
-                    refused=True, retrieval_confidence=0.0, timings_ms={"total_ms": 1.0},
+                    refused=True, retrieval_confidence=0.0,
+                    timings_ms={"embed": 0.5, "dense": 0.5, "total_ms": 1.0},
                 )
-            ctx = ScoredChunk("c1", "supporting context text", 0.9, {"source_file": "doc.md"})
+            source = rec.supporting_sources[0] if rec.supporting_sources else "doc.md"
+            ctx = ScoredChunk("c1", "supporting context text", 0.9, {"source_file": source})
             return AnswerResult(
                 question=question, answer=f"{rec.expected_answer} [1]", mode="dense",
-                refused=False, retrieval_confidence=0.9, contexts=[ctx],
-                usage=TokenUsage(80, 20), cost_usd=0.00003, timings_ms={"total_ms": 5.0},
+                refused=False, retrieval_confidence=0.9, confidence=0.9,
+                citations=[
+                    Citation(
+                        index=1, resolved=True, chunk_id="c1",
+                        source_file=source, supported=True,
+                    )
+                ],
+                contexts=[ctx], usage=TokenUsage(80, 20), cost_usd=0.00003,
+                timings_ms={"embed": 1.0, "dense": 1.0, "generate": 3.0, "total_ms": 5.0},
             )
 
     class FakeJudge:

@@ -4,12 +4,15 @@ from __future__ import annotations
 from eval.metrics import (
     parse_rating,
     refusal_correctness,
+    score_citation_accuracy,
     score_correctness,
     score_faithfulness,
+    score_retrieval_relevance,
 )
 from eval.run_eval import evaluate, load_golden
 
 from rag.config import Settings
+from rag.generation.citations import Citation
 from rag.generation.llm_client import ChatResult
 from rag.indexing.vector_store import ScoredChunk
 from rag.observability.metrics import TokenUsage
@@ -68,6 +71,54 @@ def test_refusal_correctness_rewards_refusing() -> None:
     assert refusal_correctness(refused=True).passed is True
     assert refusal_correctness(refused=False).passed is False
     assert refusal_correctness(refused=True).rating is None  # no judge call
+
+
+# --- retrieval relevance (deterministic) -----------------------------------
+def _chunk_from(source: str) -> ScoredChunk:
+    return ScoredChunk("c1", "text", 0.9, {"source_file": source})
+
+
+def test_retrieval_relevance_hit_and_miss() -> None:
+    contexts = [_chunk_from("04-error-codes.md"), _chunk_from("01-overview.md")]
+    hit = score_retrieval_relevance(["04-error-codes.md"], contexts)
+    assert hit.passed is True and hit.score == 1.0
+
+    miss = score_retrieval_relevance(["05-rate-limits.md"], contexts)
+    assert miss.passed is False and miss.score == 0.0
+
+
+def test_retrieval_relevance_handles_file_section_form() -> None:
+    # SCHEMA allows "file#section"; matching is on the bare filename.
+    contexts = [_chunk_from("03-configuration.md")]
+    r = score_retrieval_relevance(["03-configuration.md#worker-settings"], contexts)
+    assert r.passed is True
+
+
+def test_retrieval_relevance_none_for_no_answer_records() -> None:
+    assert score_retrieval_relevance([], [_chunk_from("a.md")]) is None
+
+
+# --- citation accuracy (from pipeline verification) --------------------------
+def _cit(index: int, resolved: bool = True, supported: bool | None = None) -> Citation:
+    return Citation(index=index, resolved=resolved, chunk_id=f"c{index}", supported=supported)
+
+
+def test_citation_accuracy_share_of_supported() -> None:
+    r = score_citation_accuracy([_cit(1, supported=True), _cit(2, supported=False)])
+    assert r.score == 0.5 and r.passed is False
+    perfect = score_citation_accuracy([_cit(1, supported=True)])
+    assert perfect.score == 1.0 and perfect.passed is True
+
+
+def test_citation_accuracy_unresolved_counts_against() -> None:
+    # Citing a chunk that was never retrieved is an accuracy failure.
+    r = score_citation_accuracy([_cit(1, supported=True), _cit(9, resolved=False)])
+    assert r.score == 0.5
+
+
+def test_citation_accuracy_none_when_unjudged_or_empty() -> None:
+    assert score_citation_accuracy([]) is None
+    assert score_citation_accuracy([_cit(1, supported=None)]) is None
 
 
 # --- harness aggregation --------------------------------------------------
