@@ -1,8 +1,9 @@
 # Demo Storyboard (< 4 minutes)
 
-Scene-by-scene script for the demo video. Beats 1, 2, and 5 are recordable
-against the current build; beats 3 and 4 exercise V1 features and are scripted
-here so the recording plan is ready the moment they land — **record after V1**.
+Scene-by-scene script for the demo video. All five beats are recordable
+against the current build; voiceover numbers are from the 2026-07-07 eval run
+(`eval/reports/comparison.md`) — re-check them against the latest report
+before recording.
 
 ## Prep checklist (before recording)
 
@@ -60,11 +61,11 @@ every stage of this system is metered from day one."
 and when the docs don't contain the answer, it says so — it doesn't invent one,
 and it doesn't pay for a generation call to find out."
 
-## Scene 3 — Citation verification catches a fabrication (1:35 – 2:15) — **[V1: record after citation verification lands]**
+## Scene 3 — Citation verification catches a fabrication (1:35 – 2:15)
 
-**Planned shot.** Ask a question where the model over-reaches (rehearse to find
-one; alternatively lower `RETRIEVAL_CONFIDENCE_THRESHOLD` so a weak-context
-answer slips through).
+Ask a question where the model over-reaches (rehearse to find one;
+alternatively lower `RETRIEVAL_CONFIDENCE_THRESHOLD` so a weak-context answer
+slips through).
 
 **Show:** the verification pass flagging an unsupported citation — the claim
 whose cited chunk does **not** support it renders with a red *unsupported*
@@ -74,12 +75,9 @@ marker, and the composite confidence drops visibly.
 that doesn't actually support its claim gets flagged instead of silently
 shipping — and the answer's confidence reflects it."
 
-*(Partial today: citations pointing outside the retrieved set are already
-flagged red in the UI; the judge-based support check is the V1 piece.)*
+## Scene 4 — Hybrid vs dense, the exact-token case (2:15 – 3:00)
 
-## Scene 4 — Hybrid vs dense, the exact-token case (2:15 – 3:00) — **[V1: record after BM25 + RRF + reranker land]**
-
-**Planned shot.** In the UI, ask golden `q002`: *"What is the default value of
+In the UI, ask golden `q002`: *"What is the default value of
 ferry.worker.concurrency?"* in **dense** mode, then flip the toggle to
 **hybrid** and re-ask.
 
@@ -89,9 +87,9 @@ rank change and the answer's citation now hitting the exact configuration table.
 
 **Say:** "Embeddings are great at meaning but blur exact tokens — error codes,
 config keys. Hybrid runs BM25 alongside dense retrieval, fuses the rankings, and
-reranks with a cross-encoder. On our eval set that's worth `TBD` points of
-retrieval relevance over dense-only." *(Number comes from `eval/compare.py`; do
-not invent it.)*
+reranks with a cross-encoder. On our eval suite that lifts answer correctness
+from 0.77 to 0.90 — and it's what makes the refusal gate work: dense-only never
+refused an unanswerable question; hybrid caught 8 of 11."
 
 ## Scene 5 — The latency/cost story (3:00 – 3:45)
 
@@ -105,19 +103,19 @@ curl -s localhost:8000/v1/stats | jq
 service rollup — **P50/P95/P99 per stage**, refusal rate, mean cost per query.
 
 **Say:** "Every request logs a full trace — so 'how fast' and 'how much' are
-queries, not guesses: P95 sits at `TBD` ms and a query costs about $`TBD`, with
-the breakdown showing exactly which stage you'd optimize next." *(Read the real
-numbers off the screen while recording.)*
+queries, not guesses: P95 sits around 8 seconds and a query costs about
+$0.0002, with the breakdown showing exactly which stage you'd optimize next —
+retrieval is free, the LLM calls dominate." *(Confirm against the live numbers
+on screen while recording.)*
 
 ## Close (3:45 – 3:55)
 
 **Show:** README header — CI badge green, headline eval numbers.
 
 **Say (§8.4 framing):** "A RAG system with hybrid search — dense plus BM25,
-rank fusion, and reranking — hitting `TBD`% faithfulness and `TBD`% citation
-accuracy on a hand-built golden eval suite, with per-stage latency and
-cost-per-query instrumented end to end." *(Fill both numbers from the final
-eval report before recording this line.)*
+rank fusion, and reranking — hitting 100% faithfulness and 97.5% citation
+accuracy on a hand-built 53-question golden eval suite, with per-stage latency
+and cost-per-query instrumented end to end."
 
 ---
 
@@ -127,8 +125,8 @@ eval report before recording this line.)*
 |---|---|---|
 | 1 | Seed + documents | 0:30 |
 | 2 | Lookup / multi-hop / refusal | 1:05 |
-| 3 | Citation verification catch *(V1)* | 0:40 |
-| 4 | Hybrid vs dense toggle *(V1)* | 0:45 |
+| 3 | Citation verification catch | 0:40 |
+| 4 | Hybrid vs dense toggle | 0:45 |
 | 5 | Latency/cost panel + `/v1/stats` | 0:45 |
 | — | Close on README numbers | 0:10 |
 | | **Total** | **3:55** |

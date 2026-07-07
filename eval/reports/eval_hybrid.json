@@ -1,0 +1,1738 @@
+{
+  "n": 53,
+  "aggregates": {
+    "correctness_mean": 0.8962,
+    "correctness_pass_rate": 0.9057,
+    "faithfulness_mean": 1.0,
+    "faithfulness_pass_rate": 1.0,
+    "retrieval_relevance_rate": 1.0,
+    "retrieval_relevance_n": 42,
+    "citation_accuracy_mean": 0.975,
+    "citation_accuracy_n": 40,
+    "answered": 44,
+    "refused": 9,
+    "total_cost_usd": 0.010392,
+    "mean_cost_usd": 0.000196,
+    "median_cost_usd": 0.000201,
+    "mean_total_ms": 3106.1255,
+    "latency_ms": {
+      "dense": {
+        "p50": 3.327,
+        "p95": 4.025,
+        "p99": 4.384
+      },
+      "embed": {
+        "p50": 196.453,
+        "p95": 1157.852,
+        "p99": 6080.211
+      },
+      "fusion": {
+        "p50": 0.046,
+        "p95": 0.067,
+        "p99": 0.076
+      },
+      "generate": {
+        "p50": 996.435,
+        "p95": 1695.938,
+        "p99": 5010.961
+      },
+      "rerank": {
+        "p50": 354.116,
+        "p95": 403.957,
+        "p99": 9036.853
+      },
+      "sparse": {
+        "p50": 0.439,
+        "p95": 0.646,
+        "p99": 4.874
+      },
+      "total_ms": {
+        "p50": 2773.164,
+        "p95": 8024.622,
+        "p99": 15009.256
+      },
+      "verify": {
+        "p50": 1328.984,
+        "p95": 4291.988,
+        "p99": 8946.13
+      }
+    }
+  },
+  "per_category": {
+    "lookup": {
+      "n": 23,
+      "correctness_mean": 0.9239
+    },
+    "multi_hop": {
+      "n": 13,
+      "correctness_mean": 0.9808
+    },
+    "ambiguous": {
+      "n": 6,
+      "correctness_mean": 0.9167
+    },
+    "no_answer": {
+      "n": 11,
+      "correctness_mean": 0.7273
+    }
+  },
+  "records": [
+    {
+      "id": "q001",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['04-error-codes.md', '05-rate-limits.md']; retrieved ['04-error-codes.md', '05-rate-limits.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 0.5,
+        "passed": false,
+        "rating": null,
+        "detail": "1/2 citations supported"
+      },
+      "cost_usd": 0.000271,
+      "total_ms": 15009.256
+    },
+    {
+      "id": "q002",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['01-overview.md', '03-configuration.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000264,
+      "total_ms": 2773.164
+    },
+    {
+      "id": "q003",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['02-quickstart.md']; retrieved ['01-overview.md', '02-quickstart.md', '05-rate-limits.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000179,
+      "total_ms": 2912.361
+    },
+    {
+      "id": "q004",
+      "category": "lookup",
+      "refused": true,
+      "correctness": {
+        "name": "correctness",
+        "score": 0.0,
+        "passed": false,
+        "rating": 1,
+        "detail": ""
+      },
+      "faithfulness": null,
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['01-overview.md', '03-configuration.md', '04-error-codes.md', '06-architecture.md']"
+      },
+      "citation_accuracy": null,
+      "cost_usd": 0.0,
+      "total_ms": 561.682
+    },
+    {
+      "id": "q005",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['03-configuration.md', '04-error-codes.md', '06-architecture.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000302,
+      "total_ms": 2881.399
+    },
+    {
+      "id": "q006",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['02-quickstart.md']; retrieved ['01-overview.md', '02-quickstart.md', '04-error-codes.md', '05-rate-limits.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000198,
+      "total_ms": 2615.976
+    },
+    {
+      "id": "q007",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md', '04-error-codes.md']; retrieved ['04-error-codes.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.00021,
+      "total_ms": 3213.028
+    },
+    {
+      "id": "q008",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md', '05-rate-limits.md']; retrieved ['04-error-codes.md', '05-rate-limits.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000302,
+      "total_ms": 3801.862
+    },
+    {
+      "id": "q009",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md', '04-error-codes.md', '06-architecture.md']; retrieved ['01-overview.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000316,
+      "total_ms": 10816.672
+    },
+    {
+      "id": "q010",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['01-overview.md', '06-architecture.md']; retrieved ['01-overview.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000259,
+      "total_ms": 3135.848
+    },
+    {
+      "id": "q011",
+      "category": "ambiguous",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['03-configuration.md', '06-architecture.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "3/3 citations supported"
+      },
+      "cost_usd": 0.000387,
+      "total_ms": 4183.992
+    },
+    {
+      "id": "q012",
+      "category": "ambiguous",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 0.75,
+        "passed": true,
+        "rating": 4,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['03-configuration.md', '04-error-codes.md', '06-architecture.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000333,
+      "total_ms": 4346.413
+    },
+    {
+      "id": "q013",
+      "category": "no_answer",
+      "refused": true,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "refusal-based (no_answer category)"
+      },
+      "faithfulness": null,
+      "retrieval_relevance": null,
+      "citation_accuracy": null,
+      "cost_usd": 0.0,
+      "total_ms": 532.219
+    },
+    {
+      "id": "q014",
+      "category": "no_answer",
+      "refused": true,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "refusal-based (no_answer category)"
+      },
+      "faithfulness": null,
+      "retrieval_relevance": null,
+      "citation_accuracy": null,
+      "cost_usd": 0.0,
+      "total_ms": 573.738
+    },
+    {
+      "id": "q015",
+      "category": "no_answer",
+      "refused": true,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "refusal-based (no_answer category)"
+      },
+      "faithfulness": null,
+      "retrieval_relevance": null,
+      "citation_accuracy": null,
+      "cost_usd": 0.0,
+      "total_ms": 507.162
+    },
+    {
+      "id": "q016",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['04-error-codes.md']; retrieved ['04-error-codes.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.0002,
+      "total_ms": 2271.379
+    },
+    {
+      "id": "q017",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['04-error-codes.md']; retrieved ['01-overview.md', '03-configuration.md', '04-error-codes.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000176,
+      "total_ms": 2652.853
+    },
+    {
+      "id": "q018",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['04-error-codes.md']; retrieved ['01-overview.md', '03-configuration.md', '04-error-codes.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000178,
+      "total_ms": 2271.76
+    },
+    {
+      "id": "q019",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['04-error-codes.md']; retrieved ['01-overview.md', '04-error-codes.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000199,
+      "total_ms": 2204.175
+    },
+    {
+      "id": "q020",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['04-error-codes.md']; retrieved ['04-error-codes.md', '06-architecture.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.00022,
+      "total_ms": 2661.787
+    },
+    {
+      "id": "q021",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['04-error-codes.md', '06-architecture.md']; retrieved ['03-configuration.md', '04-error-codes.md', '06-architecture.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 0.5,
+        "passed": false,
+        "rating": null,
+        "detail": "1/2 citations supported"
+      },
+      "cost_usd": 0.000309,
+      "total_ms": 3913.853
+    },
+    {
+      "id": "q022",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['03-configuration.md', '06-architecture.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.00031,
+      "total_ms": 7724.315
+    },
+    {
+      "id": "q023",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['03-configuration.md', '05-rate-limits.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000247,
+      "total_ms": 2893.237
+    },
+    {
+      "id": "q024",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['03-configuration.md', '05-rate-limits.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000224,
+      "total_ms": 3906.378
+    },
+    {
+      "id": "q025",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['01-overview.md', '03-configuration.md', '04-error-codes.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000213,
+      "total_ms": 2031.146
+    },
+    {
+      "id": "q026",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 0.25,
+        "passed": false,
+        "rating": 2,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['03-configuration.md', '04-error-codes.md', '06-architecture.md', 'README.md']"
+      },
+      "citation_accuracy": null,
+      "cost_usd": 0.000155,
+      "total_ms": 1194.64
+    },
+    {
+      "id": "q027",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['01-overview.md', '03-configuration.md', '05-rate-limits.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000146,
+      "total_ms": 2445.354
+    },
+    {
+      "id": "q028",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['02-quickstart.md']; retrieved ['01-overview.md', '02-quickstart.md', '04-error-codes.md', '05-rate-limits.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000201,
+      "total_ms": 2257.952
+    },
+    {
+      "id": "q029",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['02-quickstart.md']; retrieved ['01-overview.md', '02-quickstart.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000159,
+      "total_ms": 2340.795
+    },
+    {
+      "id": "q030",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['05-rate-limits.md']; retrieved ['01-overview.md', '03-configuration.md', '05-rate-limits.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.0002,
+      "total_ms": 2854.098
+    },
+    {
+      "id": "q031",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 0.75,
+        "passed": true,
+        "rating": 4,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['04-error-codes.md', '05-rate-limits.md']; retrieved ['01-overview.md', '04-error-codes.md', '05-rate-limits.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000229,
+      "total_ms": 2819.453
+    },
+    {
+      "id": "q032",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md', '04-error-codes.md']; retrieved ['03-configuration.md', '04-error-codes.md', '05-rate-limits.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000279,
+      "total_ms": 3586.922
+    },
+    {
+      "id": "q033",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['01-overview.md', '06-architecture.md']; retrieved ['01-overview.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000163,
+      "total_ms": 8024.622
+    },
+    {
+      "id": "q034",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['01-overview.md', '03-configuration.md', '06-architecture.md']; retrieved ['01-overview.md', '03-configuration.md', '05-rate-limits.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000314,
+      "total_ms": 4038.648
+    },
+    {
+      "id": "q035",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['06-architecture.md']; retrieved ['01-overview.md', '03-configuration.md', '04-error-codes.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "3/3 citations supported"
+      },
+      "cost_usd": 0.000387,
+      "total_ms": 6679.121
+    },
+    {
+      "id": "q036",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md', '04-error-codes.md', '06-architecture.md']; retrieved ['01-overview.md', '03-configuration.md', '04-error-codes.md', '05-rate-limits.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "3/3 citations supported"
+      },
+      "cost_usd": 0.000393,
+      "total_ms": 4645.015
+    },
+    {
+      "id": "q037",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['04-error-codes.md', '06-architecture.md']; retrieved ['01-overview.md', '04-error-codes.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000215,
+      "total_ms": 4119.454
+    },
+    {
+      "id": "q038",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['01-overview.md', '02-quickstart.md']; retrieved ['01-overview.md', '02-quickstart.md', '04-error-codes.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000201,
+      "total_ms": 3165.813
+    },
+    {
+      "id": "q039",
+      "category": "multi_hop",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['01-overview.md', '06-architecture.md']; retrieved ['01-overview.md', '04-error-codes.md', '05-rate-limits.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000189,
+      "total_ms": 1953.038
+    },
+    {
+      "id": "q040",
+      "category": "no_answer",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 0.0,
+        "passed": false,
+        "rating": null,
+        "detail": "refusal-based (no_answer category)"
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": null,
+      "citation_accuracy": null,
+      "cost_usd": 0.000159,
+      "total_ms": 1237.088
+    },
+    {
+      "id": "q041",
+      "category": "no_answer",
+      "refused": true,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "refusal-based (no_answer category)"
+      },
+      "faithfulness": null,
+      "retrieval_relevance": null,
+      "citation_accuracy": null,
+      "cost_usd": 0.0,
+      "total_ms": 558.087
+    },
+    {
+      "id": "q042",
+      "category": "no_answer",
+      "refused": true,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "refusal-based (no_answer category)"
+      },
+      "faithfulness": null,
+      "retrieval_relevance": null,
+      "citation_accuracy": null,
+      "cost_usd": 0.0,
+      "total_ms": 557.951
+    },
+    {
+      "id": "q043",
+      "category": "no_answer",
+      "refused": true,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "refusal-based (no_answer category)"
+      },
+      "faithfulness": null,
+      "retrieval_relevance": null,
+      "citation_accuracy": null,
+      "cost_usd": 0.0,
+      "total_ms": 700.868
+    },
+    {
+      "id": "q044",
+      "category": "no_answer",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 0.0,
+        "passed": false,
+        "rating": null,
+        "detail": "refusal-based (no_answer category)"
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": null,
+      "citation_accuracy": null,
+      "cost_usd": 9.6e-05,
+      "total_ms": 1162.055
+    },
+    {
+      "id": "q045",
+      "category": "no_answer",
+      "refused": true,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "refusal-based (no_answer category)"
+      },
+      "faithfulness": null,
+      "retrieval_relevance": null,
+      "citation_accuracy": null,
+      "cost_usd": 0.0,
+      "total_ms": 454.181
+    },
+    {
+      "id": "q046",
+      "category": "no_answer",
+      "refused": true,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "refusal-based (no_answer category)"
+      },
+      "faithfulness": null,
+      "retrieval_relevance": null,
+      "citation_accuracy": null,
+      "cost_usd": 0.0,
+      "total_ms": 520.659
+    },
+    {
+      "id": "q047",
+      "category": "no_answer",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 0.0,
+        "passed": false,
+        "rating": null,
+        "detail": "refusal-based (no_answer category)"
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": null,
+      "citation_accuracy": null,
+      "cost_usd": 0.000161,
+      "total_ms": 1328.109
+    },
+    {
+      "id": "q048",
+      "category": "ambiguous",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 0.75,
+        "passed": true,
+        "rating": 4,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['01-overview.md', '03-configuration.md']; retrieved ['01-overview.md', '03-configuration.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.00032,
+      "total_ms": 3419.594
+    },
+    {
+      "id": "q049",
+      "category": "ambiguous",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md', '05-rate-limits.md']; retrieved ['03-configuration.md', '04-error-codes.md', '05-rate-limits.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000267,
+      "total_ms": 3286.089
+    },
+    {
+      "id": "q050",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['06-architecture.md']; retrieved ['01-overview.md', '02-quickstart.md', '06-architecture.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "2/2 citations supported"
+      },
+      "cost_usd": 0.000244,
+      "total_ms": 3018.669
+    },
+    {
+      "id": "q051",
+      "category": "lookup",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['04-error-codes.md']; retrieved ['03-configuration.md', '04-error-codes.md', 'README.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000264,
+      "total_ms": 3028.646
+    },
+    {
+      "id": "q052",
+      "category": "ambiguous",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['03-configuration.md']; retrieved ['03-configuration.md', '04-error-codes.md', '05-rate-limits.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000169,
+      "total_ms": 2211.694
+    },
+    {
+      "id": "q053",
+      "category": "ambiguous",
+      "refused": false,
+      "correctness": {
+        "name": "correctness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "faithfulness": {
+        "name": "faithfulness",
+        "score": 1.0,
+        "passed": true,
+        "rating": 5,
+        "detail": ""
+      },
+      "retrieval_relevance": {
+        "name": "retrieval_relevance",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "wanted one of ['02-quickstart.md']; retrieved ['01-overview.md', '02-quickstart.md', '05-rate-limits.md']"
+      },
+      "citation_accuracy": {
+        "name": "citation_accuracy",
+        "score": 1.0,
+        "passed": true,
+        "rating": null,
+        "detail": "1/1 citations supported"
+      },
+      "cost_usd": 0.000187,
+      "total_ms": 2620.384
+    }
+  ]
+}
