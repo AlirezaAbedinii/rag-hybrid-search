@@ -135,10 +135,22 @@ def test_ask_bad_input_is_422(client: TestClient, payload: dict) -> None:
     assert client.post("/v1/ask", json=payload).status_code == 422
 
 
-def test_ask_hybrid_mode_is_501_until_v1(client: TestClient) -> None:
-    resp = client.post("/v1/ask", json={"question": "anything", "mode": "hybrid"})
-    assert resp.status_code == 501
-    assert "V1" in resp.json()["detail"]
+def test_ask_hybrid_before_seeding_is_503(tmp_path) -> None:
+    """A factory failing with FileNotFoundError (unseeded BM25) -> actionable 503."""
+
+    def factory(mode: str):
+        if mode == "hybrid":
+            raise FileNotFoundError("BM25 index not found. Ingest first: python scripts/seed.py")
+        return FakePipeline(mode, _answered)
+
+    app = create_app(
+        Settings(_env_file=None),
+        pipeline_factory=factory,
+        trace_store=TraceStore(tmp_path / "t.sqlite"),
+    )
+    resp = TestClient(app).post("/v1/ask", json={"question": "anything", "mode": "hybrid"})
+    assert resp.status_code == 503
+    assert "seed" in resp.json()["detail"]
 
 
 def test_ask_logs_a_trace_per_request(tmp_path) -> None:

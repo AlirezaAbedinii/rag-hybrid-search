@@ -118,11 +118,106 @@ def test_mode_switch_routes_dense(settings: Settings) -> None:
     assert retriever.mode == "dense"
 
 
-def test_hybrid_mode_is_not_yet_implemented(settings: Settings) -> None:
-    with pytest.raises(NotImplementedError):
-        build_retriever("hybrid", settings=settings)
-
-
 def test_unknown_mode_raises(settings: Settings) -> None:
     with pytest.raises(ValueError):
         build_retriever("sparse", settings=settings)
+
+
+# --- hybrid: fakes for sparse + scorer ---------------------------------------
+class FakeBM25:
+    """Keyword index: exact token match on the fixed corpus."""
+
+    def __init__(self, docs: dict[str, str]) -> None:
+        self._docs = docs
+
+    def query(self, text: str, top_k: int):
+        tokens = set(text.lower().split())
+        hits = [
+            (cid, float(len(tokens & set(doc.lower().split()))), doc, {"source_file": f"{cid}.md"})
+            for cid, doc in self._docs.items()
+        ]
+        hits = [h for h in hits if h[1] > 0]
+        hits.sort(key=lambda h: (-h[1], h[0]))
+        return hits[:top_k]
+
+
+class KeywordScorer:
+    """Deterministic 'cross-encoder': counts shared words with the query."""
+
+    def score_pairs(self, query: str, texts: list[str]) -> list[float]:
+        q = set(query.lower().split())
+        return [float(len(q & set(t.lower().split()))) for t in texts]
+
+
+HYBRID_CORPUS = {
+    **CORPUS,
+    # An exact-token chunk the bag-of-words dense vocab cannot see: 'XQJ-429'
+    # shares no substring with VOCAB, so dense scores it 0 — but BM25 nails it.
+    "exact": "XQJ-429 documentation lives here with the exact code token.",
+}
+
+
+def _hybrid(settings: Settings):
+    return build_retriever(
+        "hybrid",
+        settings=settings,
+        embedder=FakeEmbedder(),
+        store=FakeStore(HYBRID_CORPUS),
+        sparse_index=FakeBM25(HYBRID_CORPUS),
+        scorer=KeywordScorer(),
+    )
+
+
+def test_hybrid_mode_builds_and_returns_top_k() -> None:
+    settings = Settings(_env_file=None, rerank_top_k=2, rerank_candidates=10)
+    results = _hybrid(settings).retrieve("worker timeout jobs")
+    assert len(results) <= 2
+    assert all(0.0 <= r.score <= 1.0 for r in results)  # sigmoid-normalized
+
+
+def test_hybrid_surfaces_exact_token_that_dense_misses(settings: Settings) -> None:
+    query = "worker XQJ-429 exact code"
+    # Dense alone: the embedder has no signal for XQJ-429, so the 'exact'
+    # chunk scores zero and is invisible among the semantic matches...
+    dense_only = build_retriever(
+        "dense", settings=settings, embedder=FakeEmbedder(), store=FakeStore(HYBRID_CORPUS)
+    ).retrieve(query, top_k=3)
+    dense_visible = {c.chunk_id for c in dense_only if c.score > 0}
+    assert "worker" in dense_visible  # dense does see the semantic part
+    assert "exact" not in dense_visible  # ...but not the exact code
+
+    # ...while hybrid finds it via BM25 and the reranker promotes it to #1
+    # (the documented BM25-beats-dense example).
+    hybrid_ids = [c.chunk_id for c in _hybrid(settings).retrieve(query, top_k=3)]
+    assert hybrid_ids[0] == "exact"
+
+
+def test_hybrid_times_all_stages(settings: Settings) -> None:
+    sw = Stopwatch()
+    _hybrid(settings).retrieve("rate limit", stopwatch=sw)
+    assert {"embed", "dense", "sparse", "fusion", "rerank"} <= set(sw.stages)
+
+
+def test_rrf_weights_come_from_settings() -> None:
+    settings = Settings(_env_file=None, rrf_dense_weight=0.9, rrf_sparse_weight=0.1, rrf_k=42)
+    retriever = _hybrid(settings)
+    assert retriever.dense_weight == 0.9
+    assert retriever.sparse_weight == 0.1
+    assert retriever.rrf_k == 42
+
+
+def test_reranker_improves_gold_position() -> None:
+    from rag.retrieval.rerank import Reranker
+
+    gold = ScoredChunk("gold", "retry after rate limit exceeded", 0.2, {})
+    noise = ScoredChunk("noise", "unrelated worker text", 0.9, {})
+    reranked = Reranker(scorer=KeywordScorer(), top_k=2).rerank(
+        "rate limit retry", [noise, gold]  # gold arrives ranked LAST
+    )
+    assert reranked[0].chunk_id == "gold"  # cross-encoder promotes it to #1
+
+
+def test_reranker_empty_candidates() -> None:
+    from rag.retrieval.rerank import Reranker
+
+    assert Reranker(scorer=KeywordScorer(), top_k=5).rerank("q", []) == []

@@ -129,6 +129,9 @@ def create_app(
                 raise HTTPException(status_code=501, detail=str(exc)) from exc
             except ConfigError as exc:
                 raise HTTPException(status_code=503, detail=str(exc)) from exc
+            except FileNotFoundError as exc:
+                # e.g. hybrid mode before the BM25 index has been seeded.
+                raise HTTPException(status_code=503, detail=str(exc)) from exc
             except ImportError as exc:
                 raise HTTPException(
                     status_code=503, detail=f"Server missing a dependency: {exc}"

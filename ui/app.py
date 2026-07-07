@@ -54,8 +54,9 @@ with st.sidebar:
     mode = st.radio(
         "Retrieval mode",
         ["dense", "hybrid"],
-        help="Dense = embedding similarity. Hybrid (dense + BM25 + rerank) "
-        "ships with the V1 retrieval work and currently returns 501.",
+        help="Dense = embedding similarity only. Hybrid adds BM25 keyword "
+        "search, fuses the rankings (RRF), and reranks with a local "
+        "cross-encoder — better at exact tokens like error codes.",
     )
     top_k = st.slider("Chunks to retrieve (top-k)", 1, 20, 5)
 
