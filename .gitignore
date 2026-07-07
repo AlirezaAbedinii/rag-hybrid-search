@@ -38,6 +38,10 @@ data/chroma/
 # Generated evaluation reports
 eval/reports/
 
+# Draft golden candidates awaiting human verification (never commit unverified
+# ground truth; verified rows move into golden_set.jsonl)
+eval/golden/candidates_unverified.jsonl
+
 # ── Reference material (the 15-projects guide, not part of the codebase) ─────
 docs/
 
