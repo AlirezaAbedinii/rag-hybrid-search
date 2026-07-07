@@ -77,7 +77,17 @@ def build_grounded_prompt(
     return GROUNDED_SYSTEM_PROMPT, user
 
 
-# --- V1 placeholder -------------------------------------------------------
+CITATION_JUDGE_SYSTEM = (
+    "You are a strict fact-checking judge. Given a CLAIM from a generated "
+    "answer and the SOURCE passage it cites, decide whether the source "
+    "directly supports the claim. Paraphrase is fine; the source must state "
+    "the substance of the claim. Outside knowledge does not count.\n"
+    "Reply on a single line with exactly one word: SUPPORTED or UNSUPPORTED. "
+    "Then, optionally, a short 'Reason:' line."
+)
+
+
 def build_citation_judge_prompt(claim: str, source_text: str) -> tuple[str, str]:
-    """V1: prompt an LLM-as-judge to confirm a source supports a claim."""
-    raise NotImplementedError("Citation verification is a V1 feature.")
+    """Return ``(system, user)`` asking a judge whether ``source_text`` supports ``claim``."""
+    user = f"CLAIM:\n{claim}\n\nSOURCE:\n{source_text}"
+    return CITATION_JUDGE_SYSTEM, user

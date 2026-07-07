@@ -50,7 +50,8 @@ def _to_response(result: AnswerResult) -> AskResponse:
         answer=result.answer,
         mode=result.mode,
         refused=result.refused,
-        confidence=result.retrieval_confidence,
+        confidence=result.confidence,
+        confidence_breakdown=result.confidence_breakdown,
         citations=[
             CitationModel(
                 index=c.index,
@@ -58,6 +59,7 @@ def _to_response(result: AnswerResult) -> AskResponse:
                 chunk_id=c.chunk_id,
                 source_file=c.source_file,
                 section_heading=c.section_heading,
+                supported=c.supported,
             )
             for c in result.citations
         ],

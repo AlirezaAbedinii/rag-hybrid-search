@@ -39,7 +39,8 @@ class FakeChat:
 
 
 def _settings(**kw) -> Settings:
-    base = dict(retrieval_confidence_threshold=0.3)
+    # Verification off by default here; the dedicated tests below turn it on.
+    base = dict(retrieval_confidence_threshold=0.3, citation_verification=False)
     base.update(kw)
     return Settings(_env_file=None, **base)
 
@@ -107,3 +108,76 @@ def test_resolved_citations_only_reference_retrieved_chunks() -> None:
     resolved = [c for c in res.citations if c.resolved]
     assert {c.chunk_id for c in resolved} == valid_ids
     assert any(not c.resolved for c in res.citations)  # [9] flagged, not invented
+
+
+# --- citation verification + composite confidence (V1 behavior) ---------------
+class ScriptedChat:
+    """First complete() returns the answer; later calls return judge verdicts."""
+
+    model = "fake-model"
+
+    def __init__(self, answer: str, verdicts: list[str]) -> None:
+        self.answer = answer
+        self.verdicts = list(verdicts)
+        self.calls = 0
+
+    def complete(self, system: str, user: str) -> ChatResult:
+        self.calls += 1
+        if self.calls == 1:
+            return ChatResult(self.answer, TokenUsage(prompt_tokens=100, completion_tokens=20))
+        return ChatResult(self.verdicts.pop(0), TokenUsage(prompt_tokens=30, completion_tokens=5))
+
+
+def test_unsupported_citation_is_flagged_and_lowers_confidence() -> None:
+    contexts = [
+        _ctx("c1", "Ferry retries failed jobs three times.", 0.9, "04-error-codes.md"),
+        _ctx("c2", "Workers pull jobs from the queue.", 0.85, "06-architecture.md"),
+    ]
+    answer = "Ferry retries failed jobs [1]. Ferry was founded in 1999 [2]."
+    honest = ScriptedChat(answer, ["SUPPORTED", "SUPPORTED"])
+    caught = ScriptedChat(answer, ["SUPPORTED", "UNSUPPORTED"])
+    settings = _settings(citation_verification=True)
+
+    good = RAGPipeline(FakeRetriever(contexts), honest, settings, mode="dense").answer("q")
+    flagged = RAGPipeline(FakeRetriever(contexts), caught, settings, mode="dense").answer("q")
+
+    # The fabricated claim's citation is flagged, not silently dropped...
+    assert [c.supported for c in flagged.citations] == [True, False]
+    # ...and the composite confidence drops relative to the fully-supported run.
+    assert flagged.confidence < good.confidence
+    assert flagged.confidence_breakdown["citation_coverage"] == 0.5
+    # Judge calls: 1 generation + 2 verifications, usage/cost accounted.
+    assert caught.calls == 3
+    assert flagged.usage.total_tokens == 120 + 2 * 35
+    assert "verify" in flagged.timings_ms
+
+
+def test_confidence_lower_for_weak_retrieval_than_strong() -> None:
+    answer = "Grounded claim [1]."
+    strong_ctx = [_ctx("c1", "text", 0.95, "a.md")]
+    weak_ctx = [_ctx("c1", "text", 0.45, "a.md")]
+    settings = _settings(citation_verification=True)
+
+    strong = RAGPipeline(
+        FakeRetriever(strong_ctx), ScriptedChat(answer, ["SUPPORTED"]), settings, mode="dense"
+    ).answer("q")
+    weak = RAGPipeline(
+        FakeRetriever(weak_ctx), ScriptedChat(answer, ["SUPPORTED"]), settings, mode="dense"
+    ).answer("q")
+
+    assert weak.confidence < strong.confidence
+    assert weak.refused is False  # 0.45 clears the 0.3 gate; confidence reflects it
+
+
+def test_verification_off_renormalizes_and_skips_judge() -> None:
+    contexts = [_ctx("c1", "text", 0.9, "a.md")]
+    chat = FakeChat("Claim [1].")
+    pipe = RAGPipeline(FakeRetriever(contexts), chat, _settings(), mode="dense")
+
+    res = pipe.answer("q")
+
+    assert chat.calls == 1  # no judge calls
+    assert res.confidence_breakdown["verified"] is False
+    assert res.confidence_breakdown["citation_coverage"] is None
+    assert all(c.supported is None for c in res.citations)
+    assert res.confidence > 0  # renormalized, not dragged down by coverage

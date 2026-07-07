@@ -135,7 +135,21 @@ class Settings(BaseSettings):
         default=0.50,
         ge=0.0,
         le=1.0,
-        description="Composite-confidence floor for surfacing an answer as high-confidence (V1).",
+        description="Composite-confidence floor for surfacing an answer as high-confidence.",
+    )
+    citation_verification: bool = Field(
+        default=True,
+        description="Verify each citation with an LLM judge (one call per citation). "
+        "Disable for cheap dev loops.",
+    )
+    confidence_weight_retrieval: float = Field(
+        default=0.5, ge=0.0, description="Composite-confidence weight: retrieval score."
+    )
+    confidence_weight_coverage: float = Field(
+        default=0.3, ge=0.0, description="Composite-confidence weight: citation coverage."
+    )
+    confidence_weight_completeness: float = Field(
+        default=0.2, ge=0.0, description="Composite-confidence weight: answer completeness."
     )
 
     # -- Paths (resolved relative to the repo root if not absolute) --------

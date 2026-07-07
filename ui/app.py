@@ -109,12 +109,19 @@ if body:
             st.markdown(_linkify_citations(body["answer"]), unsafe_allow_html=True)
 
     with meta_col:
-        st.metric("Retrieval confidence", f"{body['confidence']:.2f}")
+        st.metric("Confidence", f"{body['confidence']:.2f}")
         st.progress(min(max(body["confidence"], 0.0), 1.0))
-        st.caption(
-            "Composite confidence (citation coverage + completeness) arrives "
-            "with the V1 verification work."
-        )
+        breakdown = body.get("confidence_breakdown") or {}
+        if breakdown:
+            rows = {
+                "retrieval": breakdown.get("retrieval"),
+                "citation coverage": breakdown.get("citation_coverage"),
+                "completeness": breakdown.get("completeness"),
+            }
+            for name, value in rows.items():
+                st.caption(f"{name}: {value:.2f}" if value is not None else f"{name}: —")
+            if breakdown.get("verified") is False:
+                st.caption("⚠️ citation verification disabled")
 
     # --- Latency / cost panel ------------------------------------------------
     st.subheader("Latency & cost")
@@ -144,6 +151,13 @@ if body:
             if not cit["resolved"]:
                 st.error(f"{label} — cites a chunk that was not retrieved", icon="⚠️")
                 continue
+            if cit.get("supported") is False:
+                st.error(
+                    f"{label} — UNSUPPORTED: the cited chunk does not back this claim",
+                    icon="🚩",
+                )
+            elif cit.get("supported") is True:
+                label += " ✓ verified"
             chunk = next((c for c in contexts if c["chunk_id"] == cit["chunk_id"]), None)
             with st.expander(label, expanded=False):
                 if chunk:

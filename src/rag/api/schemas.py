@@ -40,6 +40,11 @@ class CitationModel(BaseModel):
     chunk_id: str = ""
     source_file: str = ""
     section_heading: str | None = None
+    supported: bool | None = Field(
+        default=None,
+        description="LLM-judge verification verdict: does the cited chunk support "
+        "the claim? None when verification did not run.",
+    )
 
 
 class ContextModel(BaseModel):
@@ -67,7 +72,13 @@ class AskResponse(BaseModel):
     mode: str
     refused: bool = Field(description="True when the system declined to answer.")
     confidence: float = Field(
-        description="Retrieval confidence in [0,1] (composite confidence is V1)."
+        description="Composite confidence in [0,1]: weighted retrieval score + "
+        "citation coverage + answer completeness."
+    )
+    confidence_breakdown: dict = Field(
+        default_factory=dict,
+        description="Per-component confidence inputs (retrieval, citation_coverage, "
+        "completeness) and whether verification ran.",
     )
     citations: list[CitationModel] = Field(default_factory=list)
     contexts: list[ContextModel] = Field(

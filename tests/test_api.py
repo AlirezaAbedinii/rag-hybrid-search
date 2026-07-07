@@ -24,8 +24,21 @@ def _answered(question: str) -> AnswerResult:
         mode="dense",
         refused=False,
         retrieval_confidence=0.88,
+        confidence=0.88,
+        confidence_breakdown={
+            "retrieval": 0.88,
+            "citation_coverage": 1.0,
+            "completeness": 1.0,
+            "verified": True,
+        },
         citations=[
-            Citation(index=1, resolved=True, chunk_id="c1", source_file="04-error-codes.md")
+            Citation(
+                index=1,
+                resolved=True,
+                chunk_id="c1",
+                source_file="04-error-codes.md",
+                supported=True,
+            )
         ],
         contexts=[ctx],
         usage=TokenUsage(prompt_tokens=120, completion_tokens=30),
@@ -87,7 +100,9 @@ def test_ask_happy_path_returns_documented_schema(client: TestClient) -> None:
     assert body["refused"] is False
     assert body["mode"] == "dense"
     assert body["confidence"] == pytest.approx(0.88)
-    # Citations resolve to retrieved chunks.
+    assert body["confidence_breakdown"]["citation_coverage"] == 1.0
+    assert body["confidence_breakdown"]["verified"] is True
+    # Citations resolve to retrieved chunks, with the verification verdict.
     assert body["citations"] == [
         {
             "index": 1,
@@ -95,6 +110,7 @@ def test_ask_happy_path_returns_documented_schema(client: TestClient) -> None:
             "chunk_id": "c1",
             "source_file": "04-error-codes.md",
             "section_heading": None,
+            "supported": True,
         }
     ]
     assert body["contexts"][0]["chunk_id"] == "c1"
