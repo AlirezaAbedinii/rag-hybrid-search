@@ -176,6 +176,9 @@ def test_evaluate_aggregates_and_skips_faithfulness_on_refusal(tmp_path) -> None
 
 def test_load_golden_reads_the_real_set() -> None:
     records = load_golden(Settings(_env_file=None).golden_set_path)
-    assert len(records) == 15
+    assert len(records) >= 50  # V1 target: 50+ hand-verified questions
     assert {r.category for r in records} == {"lookup", "multi_hop", "no_answer", "ambiguous"}
     assert all(r.id and r.question and r.category for r in records)
+    assert len({r.id for r in records}) == len(records)  # ids stay unique
+    # no_answer records must have no supporting sources (SCHEMA rule).
+    assert all(not r.supporting_sources for r in records if r.category == "no_answer")
