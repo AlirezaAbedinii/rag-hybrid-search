@@ -8,6 +8,7 @@ import pytest
 from rag.ingestion.loaders import (
     UnsupportedFormatError,
     is_supported,
+    load_html,
     load_markdown,
     load_path,
     load_text,
@@ -62,9 +63,32 @@ def test_load_path_dispatches_by_extension() -> None:
     assert load_path(FIXTURES / "sample.txt").doc_type == "text"
 
 
+def test_load_html_splits_on_headings_and_strips_noise() -> None:
+    pytest.importorskip("bs4")
+    doc = load_html(FIXTURES / "sample.html")
+    assert doc.doc_type == "html"
+
+    by_heading = {b.section_heading: b.text for b in doc.blocks}
+    # Preamble inherits the <title>; h2 sections split like markdown headings.
+    assert "Intro paragraph" in by_heading["Sample HTML Doc"]
+    assert "pip install ferry-cli" in by_heading["Setup"]
+    assert "Requires Python 3.11" in by_heading["Setup"]  # list items included
+    assert "FERRY-429" in by_heading["Limits"]
+
+    joined = " ".join(b.text for b in doc.blocks)
+    assert "should be stripped" not in joined  # script + nav removed
+    assert ".hidden" not in joined  # style removed
+
+
+def test_load_path_dispatches_html() -> None:
+    pytest.importorskip("bs4")
+    assert is_supported(FIXTURES / "sample.html")
+    assert load_path(FIXTURES / "sample.html").doc_type == "html"
+
+
 def test_unsupported_format_raises(tmp_path: Path) -> None:
-    html = tmp_path / "page.html"
-    html.write_text("<h1>hi</h1>", encoding="utf-8")
-    assert not is_supported(html)  # HTML is a V1 loader
+    weird = tmp_path / "data.xyz"
+    weird.write_text("payload", encoding="utf-8")
+    assert not is_supported(weird)
     with pytest.raises(UnsupportedFormatError):
-        load_path(html)
+        load_path(weird)

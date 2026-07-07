@@ -73,7 +73,8 @@ def main(argv: list[str] | None = None) -> int:
     summary = index_path(target, settings=settings, persist_processed=args.persist)
     print(
         f"Indexed {summary.chunks_indexed} chunks from {summary.files} file(s) "
-        f"into '{settings.chroma_collection}' (total now {summary.total_chunks_in_store})."
+        f"into '{settings.chroma_collection}' (total now {summary.total_chunks_in_store}; "
+        f"bm25 {summary.bm25_chunks}; skipped {summary.chunks_skipped_duplicates} dupes)."
     )
     print(
         f"embedding_cost_usd={summary.embedding_cost_usd:.6f} timings_ms={summary.timings_ms}"

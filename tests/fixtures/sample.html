@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sample HTML Doc</title>
+  <style>.hidden { display: none; }</style>
+  <script>console.log("should be stripped");</script>
+</head>
+<body>
+  <nav><a href="/">home nav link should be stripped</a></nav>
+  <p>Intro paragraph before any heading.</p>
+  <h2>Setup</h2>
+  <p>Install the tool with <code>pip install ferry-cli</code>.</p>
+  <ul><li>Requires Python 3.11</li></ul>
+  <h2>Limits</h2>
+  <p>The API enforces rate limits; FERRY-429 signals you exceeded them.</p>
+</body>
+</html>

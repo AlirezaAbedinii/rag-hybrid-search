@@ -43,8 +43,9 @@ rerank = ["sentence-transformers>=2.7"]
 # Phase 5 — API & UI
 api = ["fastapi>=0.110", "uvicorn[standard]>=0.29"]
 ui = ["streamlit>=1.33", "requests>=2.31"]
-# Tooling
-dev = ["ruff>=0.4", "pytest>=8.0", "httpx>=0.27"]
+# Tooling (rank-bm25 is tiny/pure-Python; included so the sparse-index tests
+# run in CI without pulling the heavy chromadb/torch stack)
+dev = ["ruff>=0.4", "pytest>=8.0", "httpx>=0.27", "rank-bm25>=0.2.2"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

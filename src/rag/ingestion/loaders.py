@@ -1,12 +1,14 @@
 """Document loaders: md / txt / pdf / html -> raw text + metadata.
 
-MVP: Markdown, text, PDF. (V1 adds HTML.) Each loader returns a
-:class:`RawDocument` made of one or more :class:`RawBlock` units. A *block* is a
-span of text that already carries the metadata we can know at load time:
+Each loader returns a :class:`RawDocument` made of one or more :class:`RawBlock`
+units. A *block* is a span of text that already carries the metadata we can know
+at load time:
 
 * Markdown -> one block per heading section (``section_heading`` set).
 * Text     -> a single block (no heading, no page).
 * PDF      -> one block per page (``page`` set, 1-indexed).
+* HTML     -> one block per ``<h1>``-``<h6>`` section (``section_heading`` set);
+  ``script``/``style``/``nav`` content is stripped.
 
 Loaders are deterministic and do no network I/O. Heavy/optional parsers
 (``pypdf``, ``bs4``) are imported lazily inside their loader so importing this
@@ -21,7 +23,7 @@ from pathlib import Path
 MARKDOWN_SUFFIXES = {".md", ".markdown"}
 TEXT_SUFFIXES = {".txt", ".text", ""}
 PDF_SUFFIXES = {".pdf"}
-HTML_SUFFIXES = {".html", ".htm"}  # V1
+HTML_SUFFIXES = {".html", ".htm"}
 
 
 class UnsupportedFormatError(ValueError):
@@ -119,11 +121,62 @@ def load_pdf(path: Path) -> RawDocument:
     return RawDocument(source_file=path.name, doc_type="pdf", blocks=blocks)
 
 
+def load_html(path: Path) -> RawDocument:
+    """Load HTML as one block per ``<h1>``-``<h6>`` section.
+
+    Mirrors the markdown loader: each block's ``section_heading`` is the nearest
+    preceding heading (any pre-heading content gets the document ``<title>`` if
+    present). ``script``, ``style``, and ``nav`` elements are stripped.
+    ``bs4`` is imported lazily; install the ``ingestion`` extra to use this.
+    """
+    try:
+        from bs4 import BeautifulSoup
+    except ImportError as exc:  # pragma: no cover - exercised only without the extra
+        raise ImportError(
+            "HTML loading requires 'beautifulsoup4'. Install the ingestion extra: "
+            'pip install -e ".[ingestion]"'
+        ) from exc
+
+    path = Path(path)
+    soup = BeautifulSoup(path.read_text(encoding="utf-8"), "html.parser")
+    for tag in soup(["script", "style", "nav"]):
+        tag.decompose()
+
+    title = soup.title.get_text(strip=True) if soup.title else None
+    body = soup.body or soup
+
+    blocks: list[RawBlock] = []
+    current_heading: str | None = title
+    buffer: list[str] = []
+
+    def flush() -> None:
+        text = "\n".join(buffer).strip()
+        if text:
+            blocks.append(RawBlock(text=text, section_heading=current_heading))
+        buffer.clear()
+
+    heading_names = {"h1", "h2", "h3", "h4", "h5", "h6"}
+    for element in body.find_all(["h1", "h2", "h3", "h4", "h5", "h6", "p", "li", "pre", "td"]):
+        if element.name in heading_names:
+            flush()
+            current_heading = element.get_text(" ", strip=True) or current_heading
+            continue
+        text = element.get_text(" ", strip=True)
+        if text:
+            buffer.append(text)
+    flush()
+
+    if not blocks:  # no recognizable content elements — fall back to full text
+        blocks.append(RawBlock(text=body.get_text(" ", strip=True), section_heading=title))
+    return RawDocument(source_file=path.name, doc_type="html", blocks=blocks)
+
+
 # Dispatch table: suffix set -> loader.
 _LOADERS = [
     (MARKDOWN_SUFFIXES, load_markdown),
     (TEXT_SUFFIXES, load_text),
     (PDF_SUFFIXES, load_pdf),
+    (HTML_SUFFIXES, load_html),
 ]
 
 
@@ -139,7 +192,7 @@ def load_path(path: str | Path) -> RawDocument:
         if suffix in suffixes:
             return loader(path)
     raise UnsupportedFormatError(
-        f"No loader for '{suffix or path.name}'. Supported (MVP): markdown, text, pdf."
+        f"No loader for '{suffix or path.name}'. Supported: markdown, text, pdf, html."
     )
 
 

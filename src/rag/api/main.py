@@ -182,6 +182,8 @@ def create_app(
             chunks_indexed=summary.chunks_indexed,
             total_chunks_in_store=summary.total_chunks_in_store,
             embedding_cost_usd=summary.embedding_cost_usd,
+            bm25_chunks=getattr(summary, "bm25_chunks", 0),
+            chunks_skipped_duplicates=getattr(summary, "chunks_skipped_duplicates", 0),
             timings_ms=summary.timings_ms,
         )
 

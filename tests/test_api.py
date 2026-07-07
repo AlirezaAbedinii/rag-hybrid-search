@@ -174,6 +174,8 @@ class FakeIndexSummary:
     chunks_indexed = 37
     total_chunks_in_store = 37
     embedding_cost_usd = 0.00012
+    bm25_chunks = 37
+    chunks_skipped_duplicates = 2
     timings_ms = {"load_chunk": 3.0, "embed": 120.0, "store": 15.0, "total_ms": 138.0}
 
 

@@ -114,6 +114,12 @@ class Settings(BaseSettings):
     )
     chunk_size: int = Field(default=800, ge=1, description="Target chunk size (chars/tokens).")
     chunk_overlap: int = Field(default=120, ge=0, description="Overlap between adjacent chunks.")
+    semantic_breakpoint_threshold: float = Field(
+        default=0.5,
+        ge=0.0,
+        le=1.0,
+        description="Semantic chunker: split where adjacent-sentence cosine falls below this.",
+    )
 
     # -- Thresholds --------------------------------------------------------
     dedup_cosine_threshold: float = Field(

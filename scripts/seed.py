@@ -31,7 +31,8 @@ def main() -> int:
     summary = index_path(corpus, settings=settings)
     print(
         f"Seeded {summary.chunks_indexed} chunks from {summary.files} file(s) "
-        f"into '{settings.chroma_collection}' (total now {summary.total_chunks_in_store})."
+        f"into '{settings.chroma_collection}' (total now {summary.total_chunks_in_store}; "
+        f"bm25 {summary.bm25_chunks}; skipped {summary.chunks_skipped_duplicates} dupes)."
     )
     print(
         f"embedding_cost_usd={summary.embedding_cost_usd:.6f} timings_ms={summary.timings_ms}"
