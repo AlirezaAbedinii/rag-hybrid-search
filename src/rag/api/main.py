@@ -149,7 +149,12 @@ def create_app(
         """Answer a question from the indexed docs, with citations + metadata."""
         mode = body.mode or settings.default_mode
         pipeline = _get_pipeline(mode)
-        result = pipeline.answer(body.question, top_k=body.top_k)
+        try:
+            result = pipeline.answer(body.question, top_k=body.top_k)
+        except ImportError as exc:
+            raise HTTPException(
+                status_code=503, detail=f"Server missing a dependency: {exc}"
+            ) from exc
 
         # Log the full trace (latency, tokens, cost) for /v1/stats and analysis.
         _get_trace_store().record(
